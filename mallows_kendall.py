@@ -702,33 +702,89 @@ def ranking_to_v(sigma, k=None):
 #     print("warning. discordances_to_permut is deprecated. Use function v_to_ranking")
 #     return v_to_ranking(indCode)
 
+
+def count_inversion(left, right):
+    """
+    This function use merge sort algorithm to count the number of 
+    inversions in a permutation of two parts (left, right).
+    Parameters
+    ----------
+    left: ndarray
+        The first part of the permutation  
+    right: ndarray
+        The second part of the permutation
+    Returns
+    -------
+    result: ndarray 
+        The sorted permutation of the two parts
+    count: int
+        The number of inversions in these two parts
+    """
+    result = []
+    count = 0
+    i, j = 0, 0
+    left_len = len(left)
+    while i < left_len and j < len(right):
+        if left[i] <= right[j]:
+            result.append(left[i])
+            i += 1
+        else:
+            result.append(right[j])
+            count += left_len - i
+            j += 1
+    result += left[i:]
+    result += right[j:]
+    
+    return result, count
+
+def mergeSort_rec(lst):
+    """
+    This function count the number of inversions in a permutation by calling 
+    count_inversion recursively. 
+    Parameters 
+    ----------
+    lst: ndarray
+        The permutation
+    Returns
+    -------
+    result: ndarray
+        The sorted permutation
+    (a + b + c): int
+        The number of inversions
+    """
+    lst = list(lst)
+    if len(lst) <= 1:
+        return lst, 0
+    middle = int( len(lst) / 2 )
+    left, a   = mergeSort_rec(lst[:middle])
+    right, b  = mergeSort_rec(lst[middle:])
+    result, c = count_inversion(left, right)
+    return result, (a + b + c)
+
 def kendall_tau(A, B=None):
-    """This function computes the kendall's-tau distance between two permutations.
-    If only one permutation is given, the distance will be computed with the
-    identity permutation as the second permutation
-        Parameters
-        ----------
-        A: ndarray
-            The first permutation
-        B: ndarray, optionnal
-            The second permutation (default is None)
-        Returns
-        -------
-        int
-            The kendall's-tau distances between both permutations
+    """
+    This fonction transform two permutations in one (the composition of 
+    the first one and the inverse of the second), and count the number of 
+    inversions by calling mergeSort_rec function.
+    
+   Parameters
+   ----------
+   A: ndarray
+        The first permutation
+   B: ndarray, optionnal
+        The second permutation (default is None)
+   Returns
+   -------
+   int
+        The kendall's-tau distance between both permutations
     """
     if B is None : B = list(range(len(A)))
-    n = len(A)
-    pairs = it.combinations(range(n), 2)
-    distance = 0
-    for x, y in pairs:
-        a = A[x] - A[y]
-        try:
-            b = B[x] - B[y]
-        except:
-            print("ERROR kendall_tau, check b",A, B, x, y)
-        if (a * b < 0):
-            distance += 1
+
+    A = np.asarray(A)
+    B = np.asarray(B)
+    inverse = np.argsort(B)
+    compose = A[inverse]
+    _, distance = mergeSort_rec(compose)
     return distance
 
 # def dist_alpha(alpha, k):
