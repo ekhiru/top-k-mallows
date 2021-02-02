@@ -761,11 +761,12 @@ def mergeSort_rec(lst):
     result, c = count_inversion(left, right)
     return result, (a + b + c)
 
-def kendall_tau(A, B=None):
+def kendall_tau_MSort(A, B=None):
     """
-    This fonction transform two permutations in one (the composition of 
-    the first one and the inverse of the second), and count the number of 
-    inversions by calling mergeSort_rec function.
+    This function computes the kendall's-tau distance between two permutations
+    using merge sort algorithm.
+    If only one permutation is given, the distance will be computed with the
+    identity permutation as the second permutation
     
    Parameters
    ----------
@@ -785,6 +786,35 @@ def kendall_tau(A, B=None):
     inverse = np.argsort(B)
     compose = A[inverse]
     _, distance = mergeSort_rec(compose)
+    return distance
+
+def kendall_tau(A, B=None):
+    """This function computes the kendall's-tau distance between two permutations.
+    If only one permutation is given, the distance will be computed with the
+    identity permutation as the second permutation
+        Parameters
+        ----------
+        A: ndarray
+            The first permutation
+        B: ndarray, optionnal
+            The second permutation (default is None)
+        Returns
+        -------
+        int
+            The kendall's-tau distances between both permutations
+    """
+    if B is None : B = list(range(len(A)))
+    n = len(A)
+    pairs = it.combinations(range(n), 2)
+    distance = 0
+    for x, y in pairs:
+        a = A[x] - A[y]
+        try:
+            b = B[x] - B[y]
+        except:
+            print("ERROR kendall_tau, check b",A, B, x, y)
+        if (a * b < 0):
+            distance += 1
     return distance
 
 # def dist_alpha(alpha, k):
