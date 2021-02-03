@@ -783,6 +783,29 @@ def kendall_tau_MSort(A, B=None):
 
     A = np.asarray(A)
     B = np.asarray(B)
+    n = len(A)
+    
+    # test if A or B contains NaNs
+    msk = np.isnan(A)
+    indexes = np.array(range(n))[msk]
+    
+    if indexes.size: # A contains NaNs 
+        # reverse the indexes
+        indexes = sorted(indexes, reverse=True)
+        for i in indexes: # delete all NaNs and their associated values in B
+            A = np.delete(A, i)
+            B = np.delete(B, i)
+            
+    msk = np.isnan(B)
+    indexes = np.array(range(n - len(indexes)))[msk]
+    
+    if indexes.size: # B contains NaNs 
+        # reverse the indexes
+        indexes = sorted(indexes, reverse=True)
+        for i in indexes: # delete all NaNs and their associated values in A
+            A = np.delete(A, i)
+            B = np.delete(B, i) 
+            
     inverse = np.argsort(B)
     compose = A[inverse]
     _, distance = mergeSort_rec(compose)
