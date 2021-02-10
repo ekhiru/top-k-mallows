@@ -785,7 +785,7 @@ def kendall_tau_MSort(A, B=None):
     B = np.asarray(B)
     n = len(A)
     
-    # test if A or B contains NaNs
+    # check if A contains NaNs
     msk = np.isnan(A)
     indexes = np.array(range(n))[msk]
     
@@ -795,7 +795,7 @@ def kendall_tau_MSort(A, B=None):
         for i in indexes: # delete all NaNs and their associated values in B
             A = np.delete(A, i)
             B = np.delete(B, i)
-            
+    # check if B contains NaNs        
     msk = np.isnan(B)
     indexes = np.array(range(n - len(indexes)))[msk]
     
