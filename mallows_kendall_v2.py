@@ -551,8 +551,28 @@ def likelihood_mm(perms, s0, theta):
     return probs.sum()
 
 def sample(m, n=None, k=None, theta=None, phi=None, s0=None):
-    """
-    New function
+    """This function generates m permutations (rankings) according 
+    to Mallows Models (if the given parameters are m, n, k/None, 
+    theta/phi: float, s0/None) or Generalized Mallows Models 
+    (if the given parameters are m, theta/phi: ndarray, s0/None). 
+    Moreover, the parameter k allows the function to generate top-k rankings only.
+        Parameters
+        ----------
+        m: int
+            The number of rankings to generate
+        theta: float or ndarray, optional (if phi given)
+            The dispersion parameter theta
+        phi: float or ndarray, optional (if theta given)
+            The dispersion parameter phi
+        k: int
+            number of known positions of items for the rankings
+        s0: ndarray
+            The consensus ranking
+        Returns
+        -------
+        list
+            The rankings generated
+
     """
     if k is not None and n is None:
         print("Error, n is not given!")
