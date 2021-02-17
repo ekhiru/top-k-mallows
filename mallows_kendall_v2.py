@@ -558,7 +558,7 @@ def sample(m, n=None, k=None, theta=None, phi=None, s0=None):
         print("Error, n is not given!")
         return
     
-    theta, phi = mk.check_theta_phi(theta, phi)
+    theta, phi = check_theta_phi(theta, phi)
     
     if n is not None:
         theta = [theta]*(n-1)
@@ -579,13 +579,13 @@ def sample(m, n=None, k=None, theta=None, phi=None, s0=None):
     for samp in range(m):
         v = [np.random.choice(n,p=vprobs[i,:]) for i in range(n-1)]
         v += [0]
-        ranking = mk.v_to_ranking(v, n)
+        ranking = v_to_ranking(v, n)
         sample.append(ranking)
         
     sample = np.array([s[s0] for s in sample])
 
     if k is not None:
-        sample_rankings = np.array([mk.inverse(ordering) for ordering in sample])
+        sample_rankings = np.array([inverse(ordering) for ordering in sample])
         sample_rankings = np.array([ran[s0] for ran in sample_rankings])
         sample = np.array([[i if i in range(k) else np.nan for i in ranking] for
                         ranking in sample_rankings])
