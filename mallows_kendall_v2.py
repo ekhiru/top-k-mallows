@@ -1,3 +1,4 @@
+
 import numpy as np
 import itertools as it
 import scipy as sp
@@ -57,7 +58,7 @@ def inverse_partial(sigma):
         ndarray
             The inverse of given partial permutation
     """
-    inv = np.array([np.nan]*len(sigma))
+    inv = np.full(len(sigma), np.nan)
     for i,j in enumerate(sigma):
         if not np.isnan(j):
             inv[int(j)] = i
@@ -104,7 +105,7 @@ def borda_partial(rankings, w, k):
     """
     a, b = rankings, w
     a, b = np.nan_to_num(rankings,nan=k), w
-    aux = np.array([a[i] * b[i] for i in range(len(a))])
+    aux = a * b
     borda = np.argsort(np.argsort(np.nanmean(aux, axis=0))).astype(float)
     mask = np.isnan(rankings).all(axis=0)
     borda[mask]=np.nan
@@ -153,7 +154,9 @@ def expected_dist_mm(n, theta=None, phi=None):
             The expected disance under the MMs
     """
     theta, phi = check_theta_phi(theta, phi)
-    expected_dist = n * np.exp(-theta) / (1-np.exp(-theta)) - np.sum([j * np.exp(-j*theta) / (1 - np.exp(-j*theta))  for j in range(1,n+1)])
+    rnge = np.array(range(1,n+1))
+    expected_dist = n * np.exp(-theta) / (1-np.exp(-theta)) - np.sum(rnge * np.exp(-rnge*theta) / (1 - np.exp(-rnge*theta)))
+    
     return expected_dist
 
 def variance_dist_mm(n, theta=None, phi=None):
@@ -164,7 +167,9 @@ def variance_dist_mm(n, theta=None, phi=None):
         -------
     """
     theta, phi = check_theta_phi(theta, phi)
-    variance = (phi*n)/(1-phi)**2 - np.sum([(pow(phi,i) * i**2)/(1-pow(phi,i))**2  for i in range(1,n+1)])
+    rnge = np.array(range(1,n+1))
+    variance = (phi*n)/(1-phi)**2 - np.sum((pow(phi,rnge) * rnge**2)/(1-pow(phi,rnge))**2)
+
     return variance
 
 def expected_v(n, theta=None, phi=None, k=None):#txapu integrar
@@ -186,9 +191,10 @@ def expected_v(n, theta=None, phi=None, k=None):#txapu integrar
     """
     theta, phi = check_theta_phi(theta, phi)
     if k is None: k = n-1
-    if type(theta)!=list: theta = [theta]*k
-    expected_v = [np.exp(-theta[j]) / (1-np.exp(-theta[j])) - (n-j) * np.exp(-(n-j)*theta[j]) / (1 - np.exp(-(n-j)*theta[j]))  for j in range(k)]
-    return np.array(expected_v)
+    if type(theta)!=list: theta = np.full(k, theta)
+    rnge = np.array(range(k))
+    expected_v = np.exp(-theta[rnge]) / (1-np.exp(-theta[rnge])) - (n-rnge) * np.exp(-(n-rnge)*theta[rnge]) / (1 - np.exp(-(n-rnge)*theta[rnge]))
+    return expected_v
 
 def variance_v(n, theta=None, phi=None, k=None):
     """
@@ -201,9 +207,10 @@ def variance_v(n, theta=None, phi=None, k=None):
     if k is None:
         k = n-1
     if type(phi)!=list:
-        phi = [phi]*k
-    var_v = [phi[j]/(1-phi[j])**2 - (n-j)**2 * phi[j]**(n-j) / (1-phi[j]**(n-j))**2 for j in range(k)]
-    return np.array(var_v)
+        phi = np.full(k, phi)
+    rnge = np.array(range(k))
+    var_v = phi[rnge]/(1-phi[rnge])**2 - (n-rnge)**2 * phi[rnge]**(n-rnge) / (1-phi[rnge]**(n-rnge))**2
+    return var_v
 
 def expected_dist_top_k(n, k, theta=None, phi=None):
     """Compute the expected distance for top-k rankings, following
@@ -222,7 +229,8 @@ def expected_dist_top_k(n, k, theta=None, phi=None):
             The expected disance under the MMs
     """
     theta, phi = check_theta_phi(theta, phi)
-    expected_dist = k * np.exp(-theta) / (1-np.exp(-theta)) - np.sum([j * np.exp(-j*theta) / (1 - np.exp(-j*theta))  for j in range(n-k+1,n+1)])
+    rnge = np.array(range(n-k+1,n+1))
+    expected_dist = k * np.exp(-theta) / (1-np.exp(-theta)) - np.sum(rnge * np.exp(-rnge*theta) / (1 - np.exp(-rnge*theta)))
     return expected_dist
 
 def variance_dist_top_k(n, k, theta=None, phi=None):
@@ -235,7 +243,8 @@ def variance_dist_top_k(n, k, theta=None, phi=None):
         -------
     """
     theta, phi = check_theta_phi(theta, phi)
-    variance = (phi*k)/(1-phi)**2 - np.sum([(pow(phi,i) * i**2)/(1-pow(phi,i))**2  for i in range(n-k+1,n+1)])
+    rnge = np.array(range(n-k+1,n+1))
+    variance = (phi*k)/(1-phi)**2 - np.sum((pow(phi,rnge) * rnge**2)/(1-pow(phi,rnge))**2)
     return variance
 
 
@@ -254,10 +263,11 @@ def psi_mm(n, theta=None, phi=None):
         float
             The normalization constant psi
     """
+    rnge = np.array(range(2,n+1))
     if theta is not None:
-        return np.prod([(1-np.exp(-theta*j))/(1-np.exp(-theta)) for j in range(2,n+1)])
+        return np.prod((1-np.exp(-theta*rnge))/(1-np.exp(-theta)))
     if phi is not None:
-        return np.prod([(1-np.power(phi,j))/(1-phi) for j in range(2,n+1)])
+        return np.prod((1-np.power(phi,rnge))/(1-phi))
     theta, phi = check_theta_phi(theta, phi)
 
 def prob_mode(n, theta):
@@ -273,7 +283,8 @@ def prob_mode(n, theta):
         float
             The probability mode
     """
-    psi = np.array([(1 - np.exp(( - n + i )*(theta[i])))/(1 - np.exp( -theta[i])) for i in range(n-1)])
+    rnge = np.array(range(n-1))
+    psi = (1 - np.exp(( - n + rnge )*(theta[rnge])))/(1 - np.exp( -theta[rnge]))
     return np.prod(1.0/psi)
 
 def prob(n, theta, dist):
@@ -291,7 +302,8 @@ def prob(n, theta, dist):
         float
             Probability of the permutation
     """
-    psi = np.array([(1 - np.exp(( - n + i )*(theta)))/(1 - np.exp( -theta)) for i in range(n-1)])
+    rnge = np.array(range(n-1))
+    psi = (1 - np.exp(( - n + rnge )*(theta)))/(1 - np.exp( -theta)) 
     psi = np.prod(psi)
     return np.exp(-theta*dist) / psi
 
@@ -315,7 +327,8 @@ def prob_sample(perms, sigma, theta=None, phi=None):
     """
     m, n = perms.shape
     theta, phi = check_theta_phi(theta, phi)
-    psi = np.array([(1 - np.exp(( - n + i )*(theta)))/(1 - np.exp( -theta)) for i in range(n-1)])
+    rnge = np.array(range(n-1))
+    psi = (1 - np.exp(( - n + rnge )*(theta)))/(1 - np.exp( -theta))
     psi = np.prod(psi)
     return np.array([np.exp(-theta*kendall_tau(perm, sigma)) / psi for perm in perms])
 
@@ -451,10 +464,10 @@ def mle_theta_mm_f(theta, n, dist_avg):
             Value of the function for given parameters
     """
     aux = 0
-    for j in range(1, n):
-        k = n - j + 1
-        aux += (k * np.exp(-theta * k))/(1 - np.exp(-theta * k))
+    rnge = np.array(range(1,n))
+    aux = np.sum((n-rnge+1)*np.exp(-theta*(n-rnge+1))/(1-np.exp(-theta*(n-rnge+1))))
     aux2 = (n-1) / (np.exp( theta ) - 1) - dist_avg
+    
     return aux2 - aux
 
 def mle_theta_mm_fdev(theta, n, dist_avg):
@@ -476,10 +489,10 @@ def mle_theta_mm_fdev(theta, n, dist_avg):
             parameters
     """
     aux = 0
-    for j in range(1, n):
-        k = n - j + 1
-        aux += (k * k * np.exp( -theta * k ))/pow((1 - np.exp(-theta * k)), 2)
+    rnge = np.array(range(1, n))
+    aux = np.sum((n-rnge+1)*(n-rnge+1)*np.exp(-theta*(n-rnge+1))/pow((1 - np.exp(-theta * (n-rnge+1))), 2))
     aux2 = (- n + 1) * np.exp( theta ) / pow ((np.exp( theta ) - 1), 2)
+    
     return aux2 + aux
 
 def mle_theta_j_gmm_f(theta_j, n, j, v_j_avg):
@@ -545,7 +558,8 @@ def likelihood_mm(perms, s0, theta):
             Value of log-likelihood for given parameters
     """
     m,n = perms.shape
-    psi = 1.0 / np.prod([(1-np.exp(-theta*j))/(1-np.exp(-theta)) for j in range(2,n+1)])
+    rnge = np.array(range(2,n+1))
+    psi = 1.0 / np.prod((1-np.exp(-theta*rnge))/(1-np.exp(-theta)))
     probs = np.array([np.log(np.exp(-kendall_tau(s0, perm)*theta)/psi) for perm in perms])
     # print(probs,m,n)
     return probs.sum()
@@ -581,14 +595,15 @@ def sample(m, n=None, k=None, theta=None, phi=None, s0=None):
     theta, phi = check_theta_phi(theta, phi)
     
     if n is not None:
-        theta = [theta]*(n-1)
+        theta = np.full(n-1, theta)
         
     n = len(theta)+1
     
     if s0 is None:
         s0 = np.array(range(n))
         
-    psi = [(1 - np.exp(( - n + i )*(theta[ i ])))/(1 - np.exp( -theta[i])) for i in range(n-1)]
+    rnge = np.array(range(n-1))    
+    psi = (1 - np.exp(( - n + rnge )*(theta[ rnge ])))/(1 - np.exp( -theta[rnge]))
     vprobs = np.zeros((n,n))
     for j in range(n-1):
         vprobs[j][0] = 1.0/psi[j]
@@ -626,7 +641,7 @@ def v_to_ranking(v, n):
             The permutation corresponding to the decomposition vectors
     """
     rem = list(range(n))
-    rank = np.array([np.nan]*n)
+    rank = np.full(n, np.nan)
     for i in range(len(v)):
         rank[i] = rem[v[i]]
         rem.pop(v[i])
@@ -871,16 +886,16 @@ def p_kendall_tau(beta_1, beta_2, k, p=0):
     return d + p_counter*p
 
 def alpha_to_beta(alpha,k): #aux for the p_kendall_tau
-    inv = np.array([np.nan]*len(alpha))
+    inv = np.full(len(alpha), np.nan)
     for i,j in enumerate(alpha[:k]):
         inv[int(j)] = i
     return inv
 def beta_to_alpha(beta,k): #aux for the p_kendall_tau
-    inv = [np.nan]*len(beta)
+    inv = np.full(len(beta), np.nan)
     for i,j in enumerate(beta):
         if not np.isnan(j):
             inv[int(j)] = i
-    return np.array(inv)
+    return inv
 
 
 def num_perms_at_dist(n):
