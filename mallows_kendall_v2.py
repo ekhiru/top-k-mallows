@@ -136,7 +136,7 @@ def check_theta_phi(theta, phi):
         phi = [theta_to_phi(t) for t in theta]
     if theta is None and type(phi)==list:
         theta = [phi_to_theta(p) for p in phi]
-    return theta, phi
+    return np.array(theta), np.array(phi)
 
 def expected_dist_mm(n, theta=None, phi=None):
     """Compute the expected distance, MM under the Kendall's-tau distance
@@ -603,6 +603,7 @@ def sample(m, n=None, k=None, theta=None, phi=None, s0=None):
         s0 = np.array(range(n))
         
     rnge = np.array(range(n-1))    
+    
     psi = (1 - np.exp(( - n + rnge )*(theta[ rnge ])))/(1 - np.exp( -theta[rnge]))
     vprobs = np.zeros((n,n))
     for j in range(n-1):
