@@ -330,7 +330,7 @@ def prob_sample(perms, sigma, theta=None, phi=None):
     rnge = np.array(range(n-1))
     psi = (1 - np.exp(( - n + rnge )*(theta)))/(1 - np.exp( -theta))
     psi = np.prod(psi)
-    return np.array([np.exp(-theta*kendall_tau(perm, sigma)) / psi for perm in perms])
+    return np.array([np.exp(-theta*distance(perm, sigma)) / psi for perm in perms])
 
 def fit_mm(rankings, s0=None):
     """This function computes the consensus permutation and the MLE for the
@@ -349,7 +349,7 @@ def fit_mm(rankings, s0=None):
     """
     m, n = rankings.shape
     if s0 is None: s0 = np.argsort(np.argsort(rankings.sum(axis=0))) #borda
-    dist_avg = np.mean(np.array([kendall_tau(s0, perm) for perm in rankings]))
+    dist_avg = np.mean(np.array([distance(s0, perm) for perm in rankings]))
     try:
         theta = sp.optimize.newton(mle_theta_mm_f, 0.01, fprime=mle_theta_mm_fdev, args=(n, dist_avg), tol=1.48e-08, maxiter=500, fprime2=None)
     except:
@@ -560,7 +560,7 @@ def likelihood_mm(perms, s0, theta):
     m,n = perms.shape
     rnge = np.array(range(2,n+1))
     psi = 1.0 / np.prod((1-np.exp(-theta*rnge))/(1-np.exp(-theta)))
-    probs = np.array([np.log(np.exp(-kendall_tau(s0, perm)*theta)/psi) for perm in perms])
+    probs = np.array([np.log(np.exp(-distance(s0, perm)*theta)/psi) for perm in perms])
     # print(probs,m,n)
     return probs.sum()
 
@@ -744,7 +744,7 @@ def mergeSort_rec(lst):
     result, c = count_inversion(left, right)
     return result, (a + b + c)
 
-def kendall_tau(A, B=None):
+def distance(A, B=None):
     """
     This function computes the kendall's-tau distance between two permutations
     using merge sort algorithm.
@@ -846,9 +846,9 @@ def kendall_tau(A, B=None):
 #         sigma = list(range(n))
 #     aux = beta.copy()
 #     aux = [i if not np.isnan(i) else n+1 for i in aux ]
-#     return kendall_tau(aux, sigma)
+#     return distance(aux, sigma)
 
-def p_kendall_tau(beta_1, beta_2, k, p=0):
+def p_distance(beta_1, beta_2, k, p=0):
     alpha_1 = beta_to_alpha(beta_1, k=k)
     alpha_2 = beta_to_alpha(beta_2, k=k)
     d = 0
@@ -885,12 +885,12 @@ def p_kendall_tau(beta_1, beta_2, k, p=0):
                 p_counter += 1
     return d + p_counter*p
 
-def alpha_to_beta(alpha,k): #aux for the p_kendall_tau
+def alpha_to_beta(alpha,k): #aux for the p_distance
     inv = np.full(len(alpha), np.nan)
     for i,j in enumerate(alpha[:k]):
         inv[int(j)] = i
     return inv
-def beta_to_alpha(beta,k): #aux for the p_kendall_tau
+def beta_to_alpha(beta,k): #aux for the p_distance
     inv = np.full(len(beta), np.nan)
     for i,j in enumerate(beta):
         if not np.isnan(j):
