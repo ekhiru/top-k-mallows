@@ -22,7 +22,7 @@ def compose(s, p):
     Parameters
     ----------
     s: ndarray
-        The first permutation array
+        The first permutation array 
     p: ndarray
         The second permutation array
     Returns
