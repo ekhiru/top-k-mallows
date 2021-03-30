@@ -1,4 +1,3 @@
-
 import numpy as np
 import itertools as it
 import scipy as sp
@@ -564,7 +563,7 @@ def likelihood_mm(perms, s0, theta):
     # print(probs,m,n)
     return probs.sum()
 
-def sample(m, n=None, k=None, theta=None, phi=None, s0=None):
+def sample(m,*, n=None, k=None, theta=None, phi=None, s0=None):
     """This function generates m permutations (rankings) according
     to Mallows Models (if the given parameters are m, n, k/None,
     theta/phi: float, s0/None) or Generalized Mallows Models
@@ -586,7 +585,6 @@ def sample(m, n=None, k=None, theta=None, phi=None, s0=None):
         -------
         list
             The rankings generated
-
     """
     if k is not None and n is None:
         print("Error, n is not given!")
@@ -751,7 +749,6 @@ def distance(A, B=None):
     using merge sort algorithm.
     If only one permutation is given, the distance will be computed with the
     identity permutation as the second permutation
-
    Parameters
    ----------
    A: ndarray
