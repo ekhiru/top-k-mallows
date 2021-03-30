@@ -22,7 +22,7 @@ def compose(s, p):
     Parameters
     ----------
     s: ndarray
-        The first permutation array 
+        The first permutation array
     p: ndarray
         The second permutation array
     Returns
@@ -156,7 +156,7 @@ def expected_dist_mm(n, theta=None, phi=None):
     theta, phi = check_theta_phi(theta, phi)
     rnge = np.array(range(1,n+1))
     expected_dist = n * np.exp(-theta) / (1-np.exp(-theta)) - np.sum(rnge * np.exp(-rnge*theta) / (1 - np.exp(-rnge*theta)))
-    
+
     return expected_dist
 
 def variance_dist_mm(n, theta=None, phi=None):
@@ -303,7 +303,7 @@ def prob(n, theta, dist):
             Probability of the permutation
     """
     rnge = np.array(range(n-1))
-    psi = (1 - np.exp(( - n + rnge )*(theta)))/(1 - np.exp( -theta)) 
+    psi = (1 - np.exp(( - n + rnge )*(theta)))/(1 - np.exp( -theta))
     psi = np.prod(psi)
     return np.exp(-theta*dist) / psi
 
@@ -467,7 +467,7 @@ def mle_theta_mm_f(theta, n, dist_avg):
     rnge = np.array(range(1,n))
     aux = np.sum((n-rnge+1)*np.exp(-theta*(n-rnge+1))/(1-np.exp(-theta*(n-rnge+1))))
     aux2 = (n-1) / (np.exp( theta ) - 1) - dist_avg
-    
+
     return aux2 - aux
 
 def mle_theta_mm_fdev(theta, n, dist_avg):
@@ -492,7 +492,7 @@ def mle_theta_mm_fdev(theta, n, dist_avg):
     rnge = np.array(range(1, n))
     aux = np.sum((n-rnge+1)*(n-rnge+1)*np.exp(-theta*(n-rnge+1))/pow((1 - np.exp(-theta * (n-rnge+1))), 2))
     aux2 = (- n + 1) * np.exp( theta ) / pow ((np.exp( theta ) - 1), 2)
-    
+
     return aux2 + aux
 
 def mle_theta_j_gmm_f(theta_j, n, j, v_j_avg):
@@ -565,10 +565,10 @@ def likelihood_mm(perms, s0, theta):
     return probs.sum()
 
 def sample(m, n=None, k=None, theta=None, phi=None, s0=None):
-    """This function generates m permutations (rankings) according 
-    to Mallows Models (if the given parameters are m, n, k/None, 
-    theta/phi: float, s0/None) or Generalized Mallows Models 
-    (if the given parameters are m, theta/phi: ndarray, s0/None). 
+    """This function generates m permutations (rankings) according
+    to Mallows Models (if the given parameters are m, n, k/None,
+    theta/phi: float, s0/None) or Generalized Mallows Models
+    (if the given parameters are m, theta/phi: ndarray, s0/None).
     Moreover, the parameter k allows the function to generate top-k rankings only.
         Parameters
         ----------
@@ -591,19 +591,19 @@ def sample(m, n=None, k=None, theta=None, phi=None, s0=None):
     if k is not None and n is None:
         print("Error, n is not given!")
         return
-    
+
     theta, phi = check_theta_phi(theta, phi)
-    
-    if n is not None:
+
+    if n is not None: #TODO, n should be always given
         theta = np.full(n-1, theta)
-        
-    n = len(theta)+1
-    
+
+    n = len(theta)+1#TODO, n should be always given
+
     if s0 is None:
         s0 = np.array(range(n))
-        
-    rnge = np.array(range(n-1))    
-    
+
+    rnge = np.array(range(n-1))
+
     psi = (1 - np.exp(( - n + rnge )*(theta[ rnge ])))/(1 - np.exp( -theta[rnge]))
     vprobs = np.zeros((n,n))
     for j in range(n-1):
@@ -617,7 +617,7 @@ def sample(m, n=None, k=None, theta=None, phi=None, s0=None):
         v += [0]
         ranking = v_to_ranking(v, n)
         sample.append(ranking)
-        
+
     sample = np.array([s[s0] for s in sample])
 
     if k is not None:
@@ -689,17 +689,17 @@ def ranking_to_v(sigma, k=None):
 
 def count_inversion(left, right):
     """
-    This function use merge sort algorithm to count the number of 
+    This function use merge sort algorithm to count the number of
     inversions in a permutation of two parts (left, right).
     Parameters
     ----------
     left: ndarray
-        The first part of the permutation  
+        The first part of the permutation
     right: ndarray
         The second part of the permutation
     Returns
     -------
-    result: ndarray 
+    result: ndarray
         The sorted permutation of the two parts
     count: int
         The number of inversions in these two parts
@@ -718,14 +718,14 @@ def count_inversion(left, right):
             j += 1
     result += left[i:]
     result += right[j:]
-    
+
     return result, count
 
 def mergeSort_rec(lst):
     """
-    This function count the number of inversions in a permutation by calling 
-    count_inversion recursively. 
-    Parameters 
+    This function count the number of inversions in a permutation by calling
+    count_inversion recursively.
+    Parameters
     ----------
     lst: ndarray
         The permutation
@@ -751,7 +751,7 @@ def distance(A, B=None):
     using merge sort algorithm.
     If only one permutation is given, the distance will be computed with the
     identity permutation as the second permutation
-    
+
    Parameters
    ----------
    A: ndarray
@@ -768,28 +768,28 @@ def distance(A, B=None):
     A = np.asarray(A)
     B = np.asarray(B)
     n = len(A)
-    
+
     # check if A contains NaNs
     msk = np.isnan(A)
     indexes = np.array(range(n))[msk]
-    
-    if indexes.size: # A contains NaNs 
+
+    if indexes.size: # A contains NaNs
         # reverse the indexes
         indexes = sorted(indexes, reverse=True)
         for i in indexes: # delete all NaNs and their associated values in B
             A = np.delete(A, i)
             B = np.delete(B, i)
-    # check if B contains NaNs        
+    # check if B contains NaNs
     msk = np.isnan(B)
     indexes = np.array(range(n - len(indexes)))[msk]
-    
-    if indexes.size: # B contains NaNs 
+
+    if indexes.size: # B contains NaNs
         # reverse the indexes
         indexes = sorted(indexes, reverse=True)
         for i in indexes: # delete all NaNs and their associated values in A
             A = np.delete(A, i)
-            B = np.delete(B, i) 
-            
+            B = np.delete(B, i)
+
     inverse = np.argsort(B)
     compose = A[inverse]
     _, distance = mergeSort_rec(compose)
