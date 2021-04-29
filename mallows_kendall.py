@@ -743,6 +743,8 @@ def mergeSort_rec(lst):
     result, c = count_inversion(left, right)
     return result, (a + b + c)
 
+
+
 def distance(A, B=None):
     """
     This function computes the kendall's-tau distance between two permutations
