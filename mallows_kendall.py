@@ -122,7 +122,7 @@ def max_dist(n):
         Parameters
         ----------
         n: int
-            Order of permutations
+            Length of permutations
         Returns
         -------
         int
@@ -140,7 +140,7 @@ def v_to_ranking(v, n):
         v: ndarray
             Decomposition vector, same length as the permutation, last item must be 0
         n: int
-            Order of the permutation
+            Length of the permutation
         Returns
         -------
         ndarray
@@ -194,13 +194,13 @@ def sample(m, n, *, k=None, theta=None, phi=None, s0=None):
         m: int
             Number of rankings to generate
         n: int
-            Order of rankings
+            Length of rankings
         theta: float or ndarray, optional (if phi given)
             The dispersion parameter theta
         phi: float or ndarray, optional (if theta given)
             Dispersion parameter phi
         k: int
-            Order of partial permutations (only top items)
+            Length of partial permutations (only top items)
         s0: ndarray
             Consensus ranking
         Returns
@@ -247,7 +247,7 @@ def num_perms_at_dist(n):
         Parameters
         ----------
         n: int
-            Order of the permutations
+            Length of the permutations
         Returns
         -------
         ndarray
@@ -266,12 +266,12 @@ def num_perms_at_dist(n):
     return sk.astype(np.uint64)
 
 def sample_at_dist(n, dist, sigma0=None):
-    """This function randomly generates a permutation with order n at distance 
+    """This function randomly generates a permutation with length n at distance 
     dist to a given permutation sigma0.
         Parameters
         ----------
         n: int 
-            Order of the permutations
+            Length of the permutations
         dist: int
             Distance between the permutation generated randomly and a known
             permutation sigma0          
@@ -311,7 +311,7 @@ def expected_dist_mm(n, theta=None, phi=None):
         Parameters
         ----------
         n: int
-            Order of the permutation in the considered model
+            Length of the permutation in the considered model
         theta: float
             Real dispersion parameter, optional (if phi is given)
         phi: float
@@ -334,7 +334,7 @@ def variance_dist_mm(n, theta=None, phi=None):
         Parameters
         ----------
         n: int 
-            Order of the permutations
+            Length of the permutations
         theta: float
             Dispersion parameter, optional (if phi is given) 
         phi  : float
@@ -482,7 +482,7 @@ def expected_dist_top_k(n, k, theta=None, phi=None):
     """
     theta, phi = mm.check_theta_phi(theta, phi)
     rnge = np.array(range(n-k+1,n+1))
-    expected_dist = k * phi / (1-phi) - np.sum(rnge * pow(phi,rnge)) / (1 - pow(phi, rnge))
+    expected_dist = k * phi / (1-phi) - np.sum(rnge * pow(phi,rnge) / (1 - pow(phi, rnge)))
     return expected_dist
 
 #************ Variance *************#

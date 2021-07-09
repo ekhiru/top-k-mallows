@@ -11,7 +11,7 @@ def distance(A, B=None):
     """
     This function computes Hamming distance between two permutations.
     If only one permutation is given, the distance will be computed with the
-    identity permutation as the second permutation
+    identity permutation as the second permutation.
    Parameters
    ----------
    A: ndarray
@@ -50,7 +50,7 @@ def sample(m, n, *, theta=None, phi=None, s0=None):
         Returns
         -------
         ndarray
-            The rankings generated
+            The rankings generated.
     """
     sample = np.zeros((m, n))
     theta, phi = mm.check_theta_phi(theta, phi)
@@ -85,7 +85,7 @@ def sample_at_dist(n, dist, sigma0=None):
         Returns
         -------
         ndarray
-            A random permutation at distance dist to sigma0
+            A random permutation at distance dist to sigma0.
     """
     if sigma0 is None: sigma0 = np.arange(n)
     sigma = np.zeros(n)-1
@@ -101,7 +101,7 @@ def sample_at_dist(n, dist, sigma0=None):
 #********* Expected distance *********#
 
 def expected_dist_mm(n, theta=None, phi=None):
-    """The function computes the expected value of Hamming distance under Mallows Models (MMs) 
+    """The function computes the expected value of Hamming distance under Mallows Models (MMs). 
         Parameters
         ----------
         n: int
@@ -113,7 +113,7 @@ def expected_dist_mm(n, theta=None, phi=None):
         Returns
         -------
         float
-            The expected distance under MMs
+            The expected distance under MMs.
     """
     theta, phi = mm.check_theta_phi(theta, phi)
     
@@ -172,7 +172,7 @@ def prob(sigma, sigma0, theta=None, phi=None):
     Returns
     -------
     float
-        Probability mass function
+        Probability mass function.
     """
     theta, phi = mm.check_theta_phi(theta, phi)
     d = distance(sigma, sigma0)
@@ -203,7 +203,7 @@ def find_phi(n, dmin, dmax):
     Returns
     -------
     float
-        The value of phi
+        The value of phi.
     """
     assert dmin < dmax
     imin, imax = 0.0, 1.0
