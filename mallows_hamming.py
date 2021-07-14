@@ -24,7 +24,7 @@ def distance(A, B=None):
         Hamming distance between A and B
     """
     if B is None : B = list(range(len(A)))
-        
+
     return sum(A!=B)
 
 
@@ -55,7 +55,7 @@ def sample(m, n, *, theta=None, phi=None, s0=None):
     sample = np.zeros((m, n))
     theta, phi = mm.check_theta_phi(theta, phi)
 
-    facts_ = np.array([1, 1]+[0]*(n-1), dtype=np.float) 
+    facts_ = np.array([1, 1]+[0]*(n-1), dtype=np.float)
     deran_num_ = np.array([1, 0]+[0]*(n-1), dtype=np.float)
     for i in range(2, n+1):
         facts_[i] = facts_[i-1] * i
@@ -66,16 +66,16 @@ def sample(m, n, *, theta=None, phi=None, s0=None):
     for m_ in range(m):
         target_distance = np.random.choice(n+1,p=probsd/probsd.sum())
         sample[m_,:] = sample_at_dist(n, target_distance, s0)
-    
+
     return sample
 
 
 def sample_at_dist(n, dist, sigma0=None):
-    """This function randomly generates a permutation with length n at distance 
+    """This function randomly generates a permutation with length n at distance
     dist to a given permutation sigma0.
         Parameters
         ----------
-        n: int 
+        n: int
             Length of the permutations
         dist: int
             Distance between the permutation generated randomly and a known
@@ -96,12 +96,12 @@ def sample_at_dist(n, dist, sigma0=None):
     for i in range(len(unfix)-1):
         sigma[unfix[i]] = unfix[i+1]
     if len(unfix) > 0 : sigma[unfix[-1]] = unfix[0]
-    return sigma[sigma0]
+    return sigma[sigma0].astype(int)
 
 #********* Expected distance *********#
 
 def expected_dist_mm(n, theta=None, phi=None):
-    """The function computes the expected value of Hamming distance under Mallows Models (MMs). 
+    """The function computes the expected value of Hamming distance under Mallows Models (MMs).
         Parameters
         ----------
         n: int
@@ -116,12 +116,12 @@ def expected_dist_mm(n, theta=None, phi=None):
             The expected distance under MMs.
     """
     theta, phi = mm.check_theta_phi(theta, phi)
-    
+
     facts_ = np.array([1,1] + [0]*(n-1), dtype=np.float)
     for i in range(2, n+1):
         facts_[i] = facts_[i-1] * i
     x_n_1 , x_n= 0, 0
-    
+
     for k in range(n+1):
         aux = (np.exp(theta)-1)**k / facts_[k]
         x_n += aux
@@ -131,8 +131,8 @@ def expected_dist_mm(n, theta=None, phi=None):
 
 #************ Learning ************#
 
-def median(sample, ws=1): 
-    """This function computes the central permutation (consensus ranking) given 
+def median(sample, ws=1):
+    """This function computes the central permutation (consensus ranking) given
     several permutations using Hungarian algorithm.
         Parameters
         ----------
@@ -147,7 +147,7 @@ def median(sample, ws=1):
     """
     m, n = sample.shape
     wmarg = np.zeros((n, n))
-    for i in range(n): 
+    for i in range(n):
       for j in range(n):
         freqs = (sample[:, i]==j)
         wmarg[i, j] = (freqs * ws).sum()
@@ -159,7 +159,7 @@ def median(sample, ws=1):
 def prob(sigma, sigma0, theta=None, phi=None):
     """ Probability mass function of a MM with central ranking sigma0 and
     dispersion parameter theta/phi.
-    Parameters 
+    Parameters
     ----------
     sigma: ndarray
         A pemutation
@@ -177,8 +177,8 @@ def prob(sigma, sigma0, theta=None, phi=None):
     theta, phi = mm.check_theta_phi(theta, phi)
     d = distance(sigma, sigma0)
     n = len(sigma)
-    facts_ = np.array([1, 1] + [0]*(n-1), dtype=np.float) 
-    
+    facts_ = np.array([1, 1] + [0]*(n-1), dtype=np.float)
+
     for i in range(2, n+1):
         facts_[i] = facts_[i-1] * i
     sum = 0
@@ -189,8 +189,8 @@ def prob(sigma, sigma0, theta=None, phi=None):
 
 
 
-def find_phi(n, dmin, dmax): 
-    """ Find the dispersion parameter phi that gives an expected distance between 
+def find_phi(n, dmin, dmax):
+    """ Find the dispersion parameter phi that gives an expected distance between
     dmin and dmax where the length of rankings is n.
     Parameters
     ----------
@@ -198,7 +198,7 @@ def find_phi(n, dmin, dmax):
         Length of permutations
     dmin: int
         Minimum of expected distance
-    dmax: int 
+    dmax: int
         Maximum of expected distance
     Returns
     -------
@@ -211,12 +211,12 @@ def find_phi(n, dmin, dmax):
     while iterat < 500:
         med = (imax + imin) / 2
         d = expected_dist_mm(n, phi = med)
-        
+
         if d < dmin: imin = med
         elif d > dmax: imax = med
         else: return med
         iterat  += 1
-    
+
     assert False, "Max iterations reached"
 
 

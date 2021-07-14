@@ -1,6 +1,6 @@
 import numpy as np
 import itertools as it
-import scipy as sp
+import scipy.optimize as sp_opt
 import permutil as pu
 import mallows_model as mm
 
@@ -46,8 +46,8 @@ def merge(left, right):
 
 def mergeSort_rec(lst):
     """
-    This function splits recursively lst into sublists until sublist size is 1. Then, it calls the function merge() 
-    to merge all those sublists to a sorted list and compute the number of inversions used to get that sorted list. 
+    This function splits recursively lst into sublists until sublist size is 1. Then, it calls the function merge()
+    to merge all those sublists to a sorted list and compute the number of inversions used to get that sorted list.
     Finally, it returns the number of inversions in lst.
     Parameters
     ----------
@@ -90,9 +90,9 @@ def distance(A, B=None):
         Kendall's-tau distance between both permutations (equal to the number of inversions in their composition).
     """
     if B is None : B = list(range(len(A)))
-    
-    A = np.asarray(A)
-    B = np.asarray(B)
+
+    # A = np.asarray(A)
+    # B = np.asarray(B)
     n = len(A)
 
     # check if A contains NaNs
@@ -110,7 +110,7 @@ def distance(A, B=None):
     if indexes.size: # Drop NaNs in B and their corresponding values in A
         A = np.delete(A, indexes)
         B = np.delete(B, indexes)
-        
+
     inverse = np.argsort(B)
     compose = A[inverse]
     _, distance = mergeSort_rec(compose)
@@ -151,7 +151,7 @@ def v_to_ranking(v, n):
     for i in range(len(v)):
         rank[i] = rem[v[i]]
         rem.pop(v[i])
-    return rank
+    return rank.astype(int)
 
 def ranking_to_v(sigma, k=None):
     """This function computes the corresponding decomposition vector given a permutation
@@ -185,9 +185,9 @@ def ranking_to_v(sigma, k=None):
 #************ Sampling ************#
 
 def sample(m, n, *, k=None, theta=None, phi=None, s0=None):
-    """This function generates m (rankings) according to Mallows Models (if the given parameters 
-    are m, n, k/None, theta/phi: float, s0/None) or Generalized Mallows Models (if the given 
-    parameters are m, n, theta/phi: ndarray, s0/None). Moreover, the parameter k allows the 
+    """This function generates m (rankings) according to Mallows Models (if the given parameters
+    are m, n, k/None, theta/phi: float, s0/None) or Generalized Mallows Models (if the given
+    parameters are m, n, theta/phi: ndarray, s0/None). Moreover, the parameter k allows the
     function to generate top-k rankings only.
         Parameters
         ----------
@@ -212,7 +212,7 @@ def sample(m, n, *, k=None, theta=None, phi=None, s0=None):
     theta, phi = mm.check_theta_phi(theta, phi)
 
     theta = np.full(n-1, theta)
-    
+
     if s0 is None:
         s0 = np.array(range(n))
 
@@ -243,7 +243,8 @@ def sample(m, n, *, k=None, theta=None, phi=None, s0=None):
 
 def num_perms_at_dist(n):
     """This function computes the number of permutations of length 1 to n for
-    each possible Kendall's-tau distance d
+    each possible Kendall's-tau distance d. See the online Encyclopedia of
+    Integer Sequences, OEIS-A008302
         Parameters
         ----------
         n: int
@@ -251,8 +252,8 @@ def num_perms_at_dist(n):
         Returns
         -------
         ndarray
-            The number of permutations of length 1 to n for each possible 
-            Kendall's-tau distance d  
+            The number of permutations of length 1 to n for each possible
+            Kendall's-tau distance d
     """
     sk = np.zeros((n+1, int(n*(n-1)/2+1)))
     for i in range(n+1):
@@ -265,16 +266,20 @@ def num_perms_at_dist(n):
                 sk[i, j] = sk[i, j-1]+ sk[i-1, j]
     return sk.astype(np.uint64)
 
-def sample_at_dist(n, dist, sigma0=None):
-    """This function randomly generates a permutation with length n at distance 
+def sample_at_dist(n, dist, sk=None, sigma0=None):
+    """This function randomly generates a permutation with length n at distance
     dist to a given permutation sigma0.
         Parameters
         ----------
-        n: int 
+        n: int
             Length of the permutations
         dist: int
             Distance between the permutation generated randomly and a known
-            permutation sigma0          
+            permutation sigma0
+        sk: matrix
+            matrix returned by the function mallows_kendall::num_perms_at_dist(n)
+            if this function is to be called many times, to avoid recomputation,
+            sk can be provided in the input. Otherwise, the function is called here
         sigma0: ndarray, optional
             A known permutation (If not given, then it equals the identity)
         Returns
@@ -285,8 +290,8 @@ def sample_at_dist(n, dist, sigma0=None):
     i = 0
     probs = np.zeros(n+1)
     v = np.zeros(n, dtype=int)
-    sk = num_perms_at_dist(n)
-    
+    if sk is None: sk = num_perms_at_dist(n)
+
     while i<n and dist > 0 :
         rest_max_dist = (n - i - 1 ) * ( n - i - 2 ) / 2
         if rest_max_dist  >= dist:
@@ -301,13 +306,13 @@ def sample_at_dist(n, dist, sigma0=None):
         dist -= v[i]
         i += 1
     random_perm = v_to_ranking(v, n)
-    
+
     return random_perm[sigma0].reshape(-1)
 
 #********* Expected distance *********#
 
 def expected_dist_mm(n, theta=None, phi=None):
-    """The function computes the expected distance of Kendall's-tau distance under Mallows models (MMs). 
+    """The function computes the expected distance of Kendall's-tau distance under Mallows models (MMs).
         Parameters
         ----------
         n: int
@@ -333,17 +338,17 @@ def variance_dist_mm(n, theta=None, phi=None):
     """ This function returns the variance of Kendall's-tau distance under the MMs.
         Parameters
         ----------
-        n: int 
+        n: int
             Length of the permutations
         theta: float
-            Dispersion parameter, optional (if phi is given) 
+            Dispersion parameter, optional (if phi is given)
         phi  : float
-            Dispersion parameter, optional (if theta is given) 
+            Dispersion parameter, optional (if theta is given)
         Returns
         -------
         float
             The variance of Kendall's-tau distance under the MMs.
-        
+
     """
     theta, phi = mm.check_theta_phi(theta, phi)
     rnge = np.array(range(1,n+1))
@@ -354,7 +359,7 @@ def variance_dist_mm(n, theta=None, phi=None):
 #************ Learning ************#
 
 def median(rankings): # Borda
-    """ This function computes the central permutation (consensus ranking) given 
+    """ This function computes the central permutation (consensus ranking) given
     several permutations.
         Parameters
         ----------
@@ -391,7 +396,7 @@ def fit_mm(rankings, s0=None):
     if s0 is None: s0 = np.argsort(np.argsort(rankings.sum(axis=0))) #borda
     dist_avg = np.mean(np.array([distance(s0, perm) for perm in rankings]))
     try:
-        theta = sp.optimize.newton(mle_theta_mm_f, 0.01, fprime=mle_theta_mm_fdev, args=(n, dist_avg), tol=1.48e-08, maxiter=500, fprime2=None)
+        theta = sp_opt.newton(mle_theta_mm_f, 0.01, fprime=mle_theta_mm_fdev, args=(n, dist_avg), tol=1.48e-08, maxiter=500, fprime2=None)
     except:
         if dist_avg == 0.0:
             return s0, np.exp(-5)#=phi
@@ -407,12 +412,12 @@ def fit_mm(rankings, s0=None):
 #*************** Distance ***************#
 
 def p_distance(beta_1, beta_2, k, p=0):
-    """This function returns the distance between top-k rankings using 
+    """This function returns the distance between top-k rankings using
     the p-parametrized Kendall's-tau distance.
-    Parameters 
+    Parameters
     ----------
     beta_1: ndarray
-        A top-k permutation     
+        A top-k permutation
     beta_2: ndarray
         A top-k permutation
     k: int
@@ -422,9 +427,9 @@ def p_distance(beta_1, beta_2, k, p=0):
     Returns
     -------
     float
-        The p-parametrized Kendall's-tau distance. 
+        The p-parametrized Kendall's-tau distance.
     """
-     
+
     alpha_1 = beta_to_alpha(beta_1, k=k)
     alpha_2 = beta_to_alpha(beta_2, k=k)
     d = 0
@@ -499,7 +504,7 @@ def variance_dist_top_k(n, k, theta=None, phi=None):
         theta: float, optional (if phi is given)
             Real dispersion parameter
         phi  : float, optional (if theta is given)
-            Real dispersion parameter        
+            Real dispersion parameter
         Returns
         -------
         float
@@ -521,7 +526,7 @@ def expected_v(n, theta=None, phi=None, k=None):#txapu integrar
         theta: float, optional (if phi is given)
             Real dispersion parameter
         phi  : float, optional (if theta is given)
-            Real dispersion parameter 
+            Real dispersion parameter
         k: int, optional
             Length of partial permutations (only top items)
         Returns
@@ -545,7 +550,7 @@ def variance_v(n, theta=None, phi=None, k=None):
         theta: float, optional (if phi is given)
             Real dispersion parameter
         phi  : float, optional (if theta is given)
-            Real dispersion parameter 
+            Real dispersion parameter
         k: int, optional
             Length of partial permutations (only top items)
         Returns
@@ -565,10 +570,10 @@ def variance_v(n, theta=None, phi=None, k=None):
 
 #******** More functions *********#
 
-def prob(sigma, sigma0, theta=None, phi=None): 
+def prob(sigma, sigma0, theta=None, phi=None):
     """Probability mass function of a MM with central ranking sigma0 and
     dispersion parameter theta/phi.
-    Parameters 
+    Parameters
     ----------
     sigma: ndarray
         A pemutation
@@ -587,24 +592,25 @@ def prob(sigma, sigma0, theta=None, phi=None):
     theta, phi = mm.check_theta_phi(theta, phi)
     sigma0_inv = pu.inverse(sigma0)
     rnge = np.array(range(n-1))
-    
+
     psi = (1 - np.exp(( - n + rnge )*(theta)))/(1 - np.exp( -theta))
     psi = np.prod(psi)
-    
+
     dist = distance( pu.compose(sigma, sigma0_inv) )
-    
-    return np.exp( - theta *  dist ) / psi  
+
+    return np.exp( - theta *  dist ) / psi
 
 def borda_partial(rankings, w, k):
-    """This function approximate the consensus ranking of a top-k samples using Borda algorithm.
+    """This function approximate the consensus ranking of a top-k rankings using Borda algorithm.
+        Each nan-ranked item is assumed to have ranking $k$
         Parameters
         ----------
         rankings: ndarray
             The matrix of permutations
         w: float
-        
+            weight of each ranking
         k: int
-            Length of partial permutations (only top items) 
+            Length of partial permutations (only top items)
         Returns
         -------
         ndarray
@@ -786,7 +792,7 @@ def likelihood_mm(perms, s0, theta):
     rnge = np.array(range(2,n+1))
     psi = 1.0 / np.prod((1-np.exp(-theta*rnge))/(1-np.exp(-theta)))
     probs = np.array([np.log(np.exp(-distance(s0, perm)*theta)/psi) for perm in perms])
-    
+
     return probs.sum()
 
 
@@ -807,17 +813,17 @@ def beta_to_alpha(beta,k): #aux for the p_distance
 
 
 def find_phi_n(n, bins):
-    """ Divide the expected distances into bins and return both the expected 
+    """ Divide the expected distances into bins and return both the expected
     distances and their corresponding values of dispersion parameter phi.
     Parameters
     ----------
     n: int
         Length of permutations
     bins: int
-        Number of bins 
+        Number of bins
     Returns
     -------
-    tuple 
+    tuple
         An array of expected distances and their corresponding dispersion parameter phi
     """
     ed, phi_ed = [], []
@@ -828,7 +834,7 @@ def find_phi_n(n, bins):
     return ed, phi_ed
 
 def find_phi(n, dmin, dmax):
-    """Find the dispersion parameter phi that gives an expected distance between 
+    """Find the dispersion parameter phi that gives an expected distance between
     dmin and dmax where the length of rankings is n.
     Parameters
     ----------
@@ -836,7 +842,7 @@ def find_phi(n, dmin, dmax):
         Length of permutations
     dmin: int
         The minimum of expected distance
-    dmax: int 
+    dmax: int
         The maximum of expected distance
     Returns
     -------
@@ -852,8 +858,8 @@ def find_phi(n, dmin, dmax):
         elif d < dmin : imin = med
         elif d > dmax : imax = med
         iterat  += 1
-        
-        
-        
-        
+
+
+
+
 # end
