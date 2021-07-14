@@ -91,8 +91,8 @@ def distance(A, B=None):
     """
     if B is None : B = list(range(len(A)))
 
-    # A = np.asarray(A)
-    # B = np.asarray(B)
+    A = np.asarray(A)
+    B = np.asarray(B)
     n = len(A)
 
     # check if A contains NaNs
@@ -101,14 +101,12 @@ def distance(A, B=None):
 
     if indexes.size: # Drop NaNs in A and their corresponding values in B
         A = np.delete(A, indexes)
-        B = np.delete(B, indexes)
 
     # check if B contains NaNs
     msk = np.isnan(B)
     indexes = np.array(range(n - len(indexes)))[msk]
 
     if indexes.size: # Drop NaNs in B and their corresponding values in A
-        A = np.delete(A, indexes)
         B = np.delete(B, indexes)
 
     inverse = np.argsort(B)
@@ -670,7 +668,7 @@ def fit_gmm(rankings, s0=None):
     try:
         theta = []
         for j in range(1, n):
-            theta_j = sp.optimize.newton(mle_theta_j_gmm_f, 0.01, fprime=mle_theta_j_gmm_fdev, args=(n, j, V_avg[j-1]), tol=1.48e-08, maxiter=500, fprime2=None)
+            theta_j = sp_opt.newton(mle_theta_j_gmm_f, 0.01, fprime=mle_theta_j_gmm_fdev, args=(n, j, V_avg[j-1]), tol=1.48e-08, maxiter=500, fprime2=None)
             theta.append(theta_j)
     except:
         print("Error in function fit_gmm")
