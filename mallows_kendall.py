@@ -99,14 +99,14 @@ def distance(A, B=None):
     msk = np.isnan(A)
     indexes = np.array(range(n))[msk]
 
-    if indexes.size: # Drop NaNs in A and their corresponding values in B
+    if indexes.size: # Drop NaNs in A 
         A = np.delete(A, indexes)
 
     # check if B contains NaNs
     msk = np.isnan(B)
-    indexes = np.array(range(n - len(indexes)))[msk]
+    indexes = np.array(range(n))[msk]
 
-    if indexes.size: # Drop NaNs in B and their corresponding values in A
+    if indexes.size: # Drop NaNs in B 
         B = np.delete(B, indexes)
 
     inverse = np.argsort(B)
