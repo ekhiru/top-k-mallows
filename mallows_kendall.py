@@ -99,15 +99,15 @@ def distance(A, B=None):
     msk = np.isnan(A)
     indexes = np.array(range(n))[msk]
 
-    if indexes.size: # Drop NaNs in A 
-        A = np.delete(A, indexes)
+    if indexes.size: 
+        A[indexes] = np.nanmax(A)
 
     # check if B contains NaNs
     msk = np.isnan(B)
     indexes = np.array(range(n))[msk]
 
-    if indexes.size: # Drop NaNs in B 
-        B = np.delete(B, indexes)
+    if indexes.size: 
+        B[indexes] = np.nanmax(B)
 
     inverse = np.argsort(B)
     compose = A[inverse]
