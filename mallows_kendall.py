@@ -91,24 +91,25 @@ def distance(A, B=None):
     """
     if B is None : B = list(range(len(A)))
 
-    A = np.asarray(A)
-    B = np.asarray(B)
+    A = np.asarray(A).copy()
+    B = np.asarray(B).copy()
     n = len(A)
 
     # check if A contains NaNs
     msk = np.isnan(A)
     indexes = np.array(range(n))[msk]
 
-    if indexes.size: 
-        A[indexes] = np.nanmax(A)
+    if indexes.size:
+        A[indexes] = n#np.nanmax(A)+1
 
     # check if B contains NaNs
     msk = np.isnan(B)
     indexes = np.array(range(n))[msk]
 
-    if indexes.size: 
-        B[indexes] = np.nanmax(B)
+    if indexes.size:
+        B[indexes] = n#np.nanmax(B)+1
 
+    print(A,B,n)
     inverse = np.argsort(B)
     compose = A[inverse]
     _, distance = mergeSort_rec(compose)
