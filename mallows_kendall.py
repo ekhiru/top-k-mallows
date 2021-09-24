@@ -109,7 +109,7 @@ def distance(A, B=None):
     if indexes.size:
         B[indexes] = n#np.nanmax(B)+1
 
-    print(A,B,n)
+    # print(A,B,n)
     inverse = np.argsort(B)
     compose = A[inverse]
     _, distance = mergeSort_rec(compose)
