@@ -109,7 +109,7 @@ def distance(A, B=None):
     if indexes.size:
         B[indexes] = n#np.nanmax(B)+1
 
-    print(A,B,n)
+    # print(A,B,n)
     inverse = np.argsort(B)
     compose = A[inverse]
     _, distance = mergeSort_rec(compose)
@@ -134,6 +134,9 @@ def max_dist(n):
 
 def v_to_ranking(v, n):
     """This function computes the corresponding permutation given a decomposition vector.
+    The O(n log n) version in 10.1.1 of
+    Arndt, J. (2010). Matters Computational: ideas, algorithms, source code.
+    Springer Science & Business Media.
         Parameters
         ----------
         v: ndarray
@@ -154,6 +157,9 @@ def v_to_ranking(v, n):
 
 def ranking_to_v(sigma, k=None):
     """This function computes the corresponding decomposition vector given a permutation
+    The O(n log n) version in 10.1.1 of
+    Arndt, J. (2010). Matters Computational: ideas, algorithms, source code.
+    Springer Science & Business Media.
         Parameters
         ----------
         sigma: ndarray

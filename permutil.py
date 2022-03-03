@@ -1,6 +1,66 @@
-import mallows_kendall as mk
 import numpy as np
 import itertools as it
+import mallows_kendall as mk
+import mallows_hamming as mh
+
+def max_dist(n, dist_name='k'):
+    if dist_name=='k': return int(n*(n-1)/2)
+    if dist_name=='c': return n-1
+    if dist_name=='h': return n
+    if dist_name=='u': return n-1
+
+def distance(sigma, tau=None, dist_name='k'):
+    if tau is None: tau = list(range(len(sigma)))
+    if dist_name == 'k':return mk.distance(sigma,tau)
+    if dist_name == 'h':return mh.distance(sigma,tau)
+    if dist_name == 'c':return cayley_dist(sigma, tau)
+    # if dist_name == 'u':return mk.distance(sigma,tau)
+
+def cayley_dist(sigma, pi=None):
+    if pi is not None: scopy = compose(sigma, np.argsort(pi))
+    else : scopy = sigma.copy()
+    dist = 0
+    n = len(scopy)
+    sinv = np.argsort(scopy)
+    for i in range(n):
+        if scopy[i] != i:
+            dist += 1
+            j = sinv[i]
+            scopy[i], scopy[j] = scopy[j], scopy[i]
+            sinv[scopy[i]], sinv[scopy[j]] = sinv[scopy[j]], sinv[scopy[i]]
+    return dist
+
+def dist_to_sample(perm,P=None,dist_name='k', sample=None):
+    # m param is for the re
+  if dist_name=='k':
+    return np.tril(P[np.ix_(np.argsort(perm),np.argsort(perm))],k=-1).sum()
+  if dist_name=='h':
+    return   (1-P[list(range(len(perm))),perm]).sum()
+  if dist_name=='c':
+    return np.sum([cayley_dist(sigma, perm) for sigma in sample])
+
+def dist_to_sample_slow(perm,dist_name='k', sample=None):
+    # to check the dist_to_sample works properly
+    return np.sum([distance(sigma, perm, dist_name) for sigma in sample])
+
+
+def sample_to_marg(sample, margtype='relative'):
+    # previously called sample_to_marg_rel
+  m,n = sample.shape
+  P = np.zeros((n,n))
+  if margtype=='relative':
+      for i in range(n):
+        for j in range(i+1,n):
+          P[i,j] = (sample[:,i]<sample[:,j]).mean()
+          P[j,i] = 1 - P[i,j]
+    #   print("triangles",np.tril(P).sum(),np.tril(P).sum())
+  elif margtype == 'absolute':
+      for i in range(n):
+          for j in range(n):
+              P[i,j] = (sample[:,i]==j).sum()/m
+  return P
+
+
 
 def compose(s, p):
     """This function composes two given permutations
@@ -72,12 +132,12 @@ def select_model(mid, n):
     mname, params, mtext, mtextlong = 'mm_ken', phi , 'MM_unif', 'Mallows model, disperse'
   elif mid == 2:
     phi = mk.find_phi(n, N/10, N/10+1)
-    theta = mk.phi_to_theta(phi)
+    theta = mm.phi_to_theta(phi)
     theta = [np.exp(theta/(i+1)) for i in range(n-1)] #+ [0]
     mname, params, mtext, mtextlong = 'gmm_ken', theta , 'GMM_peaked', 'Generalized Mallows model, peaked'
   elif mid == 3:
     phi = mk.find_phi(n, N/4, N/4+1)
-    theta = mk.phi_to_theta(phi)
+    theta = mm.phi_to_theta(phi)
     theta = [theta/(i+1) for i in range(n-1)] #+ [0]
     mname, params, mtext, mtextlong = 'gmm_ken', theta , 'GMM_unif', 'Generalized Mallows model, disperse'
   elif mid == 4:
@@ -118,20 +178,6 @@ def pl_proba(perm, w):
     ordering = np.argsort(perm)
     return np.prod([  w[ordering[i]]/w[ordering[i:]].sum()  for i in range(n)])
 
-
-def sample_to_marg_rel(sample):
-  m,n = sample.shape
-  P = np.zeros((n,n))
-  for i in range(n):
-    for j in range(i+1,n):
-      P[i,j] = (sample[:,i]<sample[:,j]).mean()
-      P[j,i] = 1 - P[i,j]
-#   print("triangles",np.tril(P).sum(),np.tril(P).sum())
-  return P
-
-def dist_to_sample(perm,P,dist='k'):
-  if dist=='k':
-    return np.tril(P[np.ix_(np.argsort(perm),np.argsort(perm))],k=-1).sum()
 
 
 

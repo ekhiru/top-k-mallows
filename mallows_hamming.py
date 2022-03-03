@@ -23,7 +23,7 @@ def distance(A, B=None):
    int
         Hamming distance between A and B
     """
-    if B is None : B = list(range(len(A)))
+    if B is None : B = np.arange(len(A))
 
     return sum(A!=B)
 
