@@ -1,5 +1,6 @@
 import numpy as np
-
+import mallows_kendall as mk
+import mallows_hamming as mh
 
 
 
