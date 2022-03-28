@@ -14,7 +14,7 @@ def distance(sigma, tau=None, dist_name='k'):
     if dist_name == 'k':return mk.distance(sigma,tau)
     if dist_name == 'h':return mh.distance(sigma,tau)
     if dist_name == 'c':return cayley_dist(sigma, tau)
-    # if dist_name == 'u':return mk.distance(sigma,tau)
+    if dist_name == 'u':return n-lcs_algo(sigma,tau)
 
 def cayley_dist(sigma, pi=None):
     if pi is not None: scopy = compose(sigma, np.argsort(pi))
@@ -38,6 +38,8 @@ def dist_to_sample(perm,P=None,dist_name='k', sample=None):
     return   (1-P[list(range(len(perm))),perm]).sum()
   if dist_name=='c':
     return np.sum([cayley_dist(sigma, perm) for sigma in sample])
+  if dist_name=='u':
+      return np.sum([distance(sigma, perm,dist_name) for sigma in sample])
 
 def dist_to_sample_slow(perm,dist_name='k', sample=None):
     # to check the dist_to_sample works properly
@@ -216,6 +218,53 @@ def get_P(n,model='mm_ken',params=None):
         pairw[j,i] = 1-pairw[i,j]
   return pairw
 
+# The longest common subsequence in Python
 
 
-#end
+# Function to find lcs_algo
+# https://www.programiz.com/dsa/longest-common-subsequence
+def lcs_algo(S1, S2):
+    n = m = len(S1)
+    L = [[0 for x in range(n+1)] for x in range(m+1)]
+
+    # Building the mtrix in bottom-up way
+    for i in range(m+1):
+        for j in range(n+1):
+            if i == 0 or j == 0:
+                L[i][j] = 0
+            elif S1[i-1] == S2[j-1]:
+                L[i][j] = L[i-1][j-1] + 1
+            else:
+                L[i][j] = max(L[i-1][j], L[i][j-1])
+
+    index = L[m][n]
+
+    lcs_algo = [""] * (index+1)
+    lcs_algo[index] = ""
+
+    i = m
+    j = n
+    while i > 0 and j > 0:
+
+        if S1[i-1] == S2[j-1]:
+            lcs_algo[index-1] = S1[i-1]
+            i -= 1
+            j -= 1
+            index -= 1
+
+        elif L[i-1][j] > L[i][j-1]:
+            i -= 1
+        else:
+            j -= 1
+    return len(lcs_algo)-1
+    # Printing the sub sequences
+    # print("S1 : " , S1 , "\nS2 : " , S2)
+    # print("LCS: " ,lcs_algo)
+
+
+# S1 = np.random.permutation(range(10))
+# S2 = np.random.permutation(range(10))
+# m = len(S1)
+# n = len(S2)
+# lcs_algo(S1, S2, m, n)
+# #end
