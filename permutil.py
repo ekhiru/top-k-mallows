@@ -14,7 +14,7 @@ def distance(sigma, tau=None, dist_name='k'):
     if dist_name == 'k':return mk.distance(sigma,tau)
     if dist_name == 'h':return mh.distance(sigma,tau)
     if dist_name == 'c':return cayley_dist(sigma, tau)
-    if dist_name == 'u':return n-lcs_algo(sigma,tau)
+    if dist_name == 'u':return len(sigma)-lcs_algo(sigma,tau)
 
 def cayley_dist(sigma, pi=None):
     if pi is not None: scopy = compose(sigma, np.argsort(pi))
